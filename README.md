@@ -1,4 +1,4 @@
 # SP_x86_assembler
 SP_x86_assembler
 
-This is...
+This is source code of System-Programming project "x86 assembler".
