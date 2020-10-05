@@ -1,0 +1,87 @@
+***********************************************************************
+開發平台: Intel CPU. RAM 4G. Windows 7 64-bit.
+***********************************************************************
+使用開發環境: Windows 7 64-bit.
+              整合開發環境: Dev-C++
+              編譯器: gcc
+***********************************************************************
+使用的程式語言: C/C++
+***********************************************************************
+所選擇的組合語言: x86
+***********************************************************************
+程式設計:
+-----------------------------------------------------------
+* 功能: 把組合語言指令組譯成 machine code. 利用各種指令格式的 structure,
+  填入各個欄位值, 以產生 machine code.
+-----------------------------------------------------------
+* 程式檔案:
+  main.cpp: 作業2的主程式
+  sp1.cpp: 作業1的程式
+  sp1.h: 作業1用到的資料結構
+  sp2.h: 作業2用到的資料結構
+-----------------------------------------------------------
+* 資料結構:
+
+Token 的結構 in sp1.h:
+struct token_s {
+    int type;     // 表示 Table 1~7 的型態
+    int value;    // Token 的 hash value
+    Str100 token; // Token 的原始字串
+};
+typedef vector<token_s> tokenLine_t; // 一行 tokens
+
+每一行輸入輸出的結構 in sp1.h:
+struct inOutLine_s {
+    Str1000 srcLine;       // 原始輸入的原始碼
+    tokenLine_t tokenLine; // 一行 tokens
+    Str100 errorMsg;       // 錯誤訊息
+    int address;           // 該行組合語言的位址
+    Str100 machineCode;    // 輸出之機器碼
+};
+
+各種指令格式的結構 in sp2.h.
+例如 immediate value to reg 指令格式用的結構:
+struct w_reg_data_s {
+    unsigned char reg : 3;
+    unsigned char w : 1;
+    unsigned char op : 4;
+
+    unsigned char dataLow;
+    unsigned char dataHigh;
+};
+這裡使用了 bit欄位, compiler 會自動把值放到正確的 bits 裡面.
+-----------------------------------------------------------
+* 流程:
+
+主程式的流程如下:
+  呼叫作業1的 function to 取得每一行的 token 資料;
+  EQU 置換處理;
+  檢查未定義的 symbol;
+  產生 machine code;
+  把 machine code 和原始碼輸出到檔案;
+
+EQU 置換處理的流程如下:
+  Scan 每一行的 EQU 找出定義處;
+  把 EQU 定義的 tokens 存入 equ 表格裡;
+  Scan 每一行參 考 EQU symbol 的地方;
+  把它置換成該 symbol 的 EQU 定義 tokens;
+
+檢查未定義symbol 的流程如下:
+  Scan 每一行的 symbol 找出定義處與參考處;
+  各自存入 definedSymbolMap 和 usedSymbolMap;
+  Scan usedSymbolMap 每一個 symbol;
+  若 symbol 不在 definedSymbolMap 裡, 標註錯誤訊息;
+
+產生 machine code 的流程如下:
+  若是 Pseudo 指令,
+    在 Pseudo table 裡找出符合的項目, 並呼叫對應的處理 function;
+  若是真實指令,
+    在 Instruction table 裡找出符合的項目, 並呼叫對應的處理 function;
+
+Instruction table 範例:
+  { FuncMovImmToReg, 查到的 op code, { {指令type,"MOV"}, {暫存器type,""}, {標點符號type,","}, {整數type,""} } },
+在 table 裡搜尋符合的資料, 即可呼叫對應的處理 function FuncMovImmToReg.
+
+***********************************************************************
+未完成的功能: EQU 的整數運算式
+***********************************************************************
